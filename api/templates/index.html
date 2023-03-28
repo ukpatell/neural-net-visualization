@@ -1,0 +1,302 @@
+<!DOCTYPE html>
+<html>
+
+    <head>
+        <title>Neural Network Calculator</title>
+        <meta charset="utf-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+        <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css">
+        <script src="https://code.jquery.com/jquery-3.3.1.slim.min.js">
+        </script>
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.7/umd/popper.min.js">
+        </script>
+        <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/js/bootstrap.min.js">
+        </script>
+        <style>
+            .btn-xl {
+                padding: 10px 20px;
+                font-size: 20px;
+                border-radius: 10px;
+                width:100%;
+                background: black;
+                color: white;
+                margin-top: 15px;
+            }
+            .btn-xl:hover{
+                background: white;
+                border: 1px solid black;
+                color: black;
+            }
+        </style>
+    </head>
+
+    <body>
+        <div class="container-fluid">
+            <div class="jumbotron text-center">
+                <h1>Neural Network Calculator</h1>
+            </div>
+        <canvas id="canvas" width="600" height="180" style="border: 2px solid black; display: block; margin: 1% auto;">
+            Please use a browser that supports "canvas"
+        </canvas>
+            <form action="/calculate" method="POST">
+                <div class="row">
+                    <div class="col-md-2">
+                        <div class="form-group">
+                            <label for="input1">Input 1:</label>
+                            <input type="number" step="0.01" class="form-control" id="input1" name="input1" value="{{ request.form['input1']|default('') }}" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="input2">Input 2:</label>
+                            <input type="number" step="0.01" class="form-control" id="input2" name="input2" value="{{ request.form['input2']|default('') }}" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="bias1">Bias:</label>
+                            <input type="number" step="0.01" class="form-control" id="bias1" name="bias1" value="{{ request.form['bias1']|default('') }}" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="activation">Activation Function:</label>
+                            <select class="form-control" id="activation" name="activation" required>
+                                <option value="">Select an activation function</option>
+                                <option value="sigmoid"{% if request.form['activation'] == 'sigmoid' %} selected{% endif %}>Sigmoid</option>
+                                <option value="tanh"{% if request.form['activation'] == 'tanh' %} selected{% endif %}>Tanh</option>
+                                <option value="relu"{% if request.form['activation'] == 'relu' %} selected{% endif %}>ReLU</option>
+                                <option value="linear"{% if request.form['activation'] == 'linear' %} selected{% endif %}>Linear</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="col-md-2">
+                        <div class="form-group">
+                            <label for="weight1_1">Weight 1 (w1):</label>
+                            <input type="number" step="0.01" min="-999" class="form-control" id="weight1_1" name="weight1_1" value="{{ request.form['weight1_1']|default('') }}" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="weight2_1">Weight 1(w2):</label>
+                            <input type="number" step="0.01" min="-999" class="form-control" id="weight2_1" name="weight2_1" value="{{ request.form['weight2_1']|default('') }}" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="h_weight1">Hidden Weight 1(w5):</label>
+                            <input type="number" step="0.01" min="-999" class="form-control" id="h_weight1" name="h_weight1" value="{{ request.form['h_weight1']|default('') }}" required>
+                        </div>
+                    </div>
+                    <div class="col-md-2">
+                        <div class="form-group">
+                            <label for="weight1_2">Weight 2 (w3):</label>
+                            <input type="number" step="0.01" min="-999" class="form-control" id="weight1_2" name="weight1_2" value="{{ request.form['weight1_2']|default('') }}" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="weight2_2">Weight 2 (w4):</label>
+                            <input type="number" step="0.01" min="-999" class="form-control" id="weight2_2" name="weight2_2" value="{{ request.form['weight2_2']|default('') }}" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="h_weight2">Hidden Weight 2 (w6):</label>
+                            <input type="number" step="0.01" min="-999" class="form-control" id="h_weight2" name="h_weight2" value="{{ request.form['h_weight2']|default('') }}" required>
+                        </div>
+                        <button type="submit" class="btn btn-default btn-xl">Calculate</button>
+                    </div>
+                    {% if data %}
+                    <hr>
+                    <div class="col-md-5">
+                        <div class="jumbotron">
+                            <h3>Output:</h3>
+                            <div class="form-group">
+                                <label for="formula">Formula:</label>
+                                <input type="text" class="form-control" id="formula" name="formula" value="{{ data.formula }}" readonly>
+                            </div>
+                            <div class="form-group">
+                                <label for="hidden1">Hidden 1 Total:</label>
+                                <input type="text" class="form-control" id="hidden1" name="hidden1" value="{{ data.hidden1 }}" readonly>
+                            </div>
+                            <div class="form-group">
+                                <label for="hidden2">Hidden 2 Total:</label>
+                                <input type="text" class="form-control" id="hidden2" name="hidden2" value="{{ data.hidden2 }}" readonly>
+                            </div>
+                    <div class="form-group">
+                        <label for="sum_with_bias">Sum with Bias:</label>
+                        <input type="text" class="form-control" id="sum_with_bias" name="sum_with_bias"
+                            value="{{ data.sum_with_output_bias }}" readonly>
+                    </div>
+                    <div class="form-group">
+                        <label for="output">Output:</label>
+                        <input type="text" class="form-control" id="output" name="output" value="{{ data.output }}"
+                            readonly>
+                    </div>
+                    {% endif %}
+                    </div>
+                    </div>
+                </div>
+            </form>
+        </div>
+    <script>
+        var canvas = document.getElementById("canvas");
+        var ctx = canvas.getContext("2d");
+
+        var radius = 2 * Math.PI;
+        var size = 40;
+
+        var x_in1 = canvas.width / 4;
+        var y_in1 = canvas.height / 4;
+        var bottom = canvas.height-y_in1;
+
+        var over_circle = 6*radius;
+
+        var output = document.getElementById("output");
+        var input1 = document.getElementById("input1").value;
+        var input2 = document.getElementById("input2").value;
+        var w1 = document.getElementById("weight1_1").value;
+        var w2= document.getElementById("weight1_2").value;
+        var w3 = document.getElementById("weight2_1").value;
+        var w4 = document.getElementById("weight2_2").value;
+        var w5 = document.getElementById("h_weight1").value;
+        var w6 = document.getElementById("h_weight2").value;
+
+        var h1 = document.getElementById("hidden1");
+        var h2 = document.getElementById("hidden2");
+
+        {#var hidden1 = document.getElementById("input1").value;#}
+        {#var hidden2 = document.getElementById("input1").value;#}
+
+
+        if(input1 === ''){
+            input1 = "Input 1";
+        }
+        if(input2 === ''){
+            input2 = "Input 2";
+        }
+        if(w1 === ''){
+            w1 = "w1";
+        }
+        if(w2 === ''){
+            w2 = "w2";
+        }
+        if(w3 === ''){
+            w3 = "w3";
+        }
+        if(w4 === ''){
+            w4 = "w4";
+        }
+        if(w5 === ''){
+            w5 = "w5";
+        }
+        if(w6 === ''){
+            w6 = "w6";
+        }
+        {# output handler#}
+        if(output === '' || output === null){
+            output = "Output";
+        }else{
+            output = Math.round(output.value * 1000) / 1000;
+        }
+        {# hidden1 handler #}
+        if(h1 === '' || h1  === null){
+            h1 = "Hidden 1";
+        }else{
+            h1 = Math.round(h1.value * 1000) / 1000;
+        }
+
+        {# hidden1 handler #}
+        if(h2 === '' || h2  === null){
+            h2 = "Hidden 2";
+        }else{
+            h2 = Math.round(h2.value * 1000) / 1000;
+        }
+
+
+
+        // input 1
+        ctx.beginPath();
+        ctx.arc(x_in1, y_in1, size, 0, radius);
+        ctx.stroke();
+
+        // input 2
+        ctx.beginPath();
+        ctx.arc(x_in1, bottom, size, 0, radius);
+        ctx.stroke();
+
+        // hidden 1
+        ctx.beginPath();
+        ctx.arc(2*x_in1, y_in1, size, 0, radius);
+        ctx.stroke();
+
+        // hidden 2
+        ctx.beginPath();
+        ctx.arc(2*x_in1, bottom, size, 0, radius);
+        ctx.stroke();
+
+        // output
+        ctx.beginPath();
+        ctx.arc(canvas.width-x_in1, canvas.height/2, size, 0, 2 * Math.PI);
+        ctx.stroke();
+        ctx.fillStyle = "green";
+		ctx.fill();
+        ctx.fillStyle = "black";
+
+        // IN-1 to H-1
+        ctx.moveTo(x_in1+over_circle,y_in1);
+        ctx.lineTo(2*x_in1-over_circle,y_in1);
+        ctx.stroke();
+        ctx.font = "bold 14px Arial";
+        ctx.fillText(w1,x_in1+1.7*size,y_in1-5);
+
+
+        // IN-2 to H-2
+        ctx.moveTo(x_in1+over_circle,bottom);
+        ctx.lineTo(2*x_in1-over_circle,bottom);
+        ctx.stroke();
+        ctx.fillText(w4,x_in1+1.7*size,bottom-5);
+
+        // H1 - Output
+        ctx.moveTo(2*x_in1+over_circle,y_in1);
+        ctx.lineTo(canvas.width-x_in1-over_circle, canvas.height/2);
+        ctx.stroke();
+        ctx.save();
+        ctx.translate((canvas.width/2)-x_in1/2.7,canvas.height/6);
+        ctx.rotate(Math.PI/3.5)
+        ctx.fillText(w2,0,y_in1+radius);
+        ctx.restore();
+
+        // H2 - Output
+        ctx.moveTo(2*x_in1+over_circle,bottom);
+        ctx.lineTo(canvas.width-x_in1-over_circle, canvas.height/2);
+        ctx.stroke();
+        ctx.save();
+        ctx.translate((canvas.width/2)-x_in1/1.04,canvas.height/2);
+        ctx.rotate(Math.PI/-3.5)
+        ctx.fillText(w3,0,y_in1+radius);
+        ctx.restore();
+
+         // IN-1 to H-2
+        ctx.moveTo(x_in1+over_circle,y_in1);
+        ctx.lineTo(2*x_in1-over_circle, bottom);
+        ctx.stroke();
+        ctx.save();
+        ctx.translate((canvas.width/2)+x_in1/1.7,canvas.height/6);
+        ctx.rotate(Math.PI/5)
+        ctx.fillText(w5,0,y_in1+radius);
+        ctx.restore();
+
+
+         // IN-1 to H-2
+        ctx.moveTo(x_in1+over_circle,bottom);
+        ctx.lineTo(2*x_in1-over_circle,y_in1);
+        ctx.stroke();
+        ctx.save();
+        ctx.translate((canvas.width/2)+x_in1/4,canvas.height/2);
+        ctx.rotate(Math.PI/-5)
+        ctx.fillText(w6,0,y_in1+radius);
+        ctx.restore();
+
+        // Add label to input 1 circle
+        ctx.font = "bold 14px Arial";
+        ctx.textAlign = "center";
+        ctx.textBaseline = "middle";
+        ctx.fillStyle = "blue";
+        ctx.fillText(input1, x_in1, y_in1);
+        ctx.fillText(input2, x_in1, bottom);
+        ctx.fillStyle = "grey";
+        ctx.fillText(h1, 2*x_in1, y_in1);
+        ctx.fillText(h2, 2*x_in1, bottom);
+        ctx.fillStyle = "white";
+        ctx.fillText(output, canvas.width-x_in1, canvas.height/2);
+    </script>
+    </body>
+</html>
